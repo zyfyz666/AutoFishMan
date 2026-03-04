@@ -154,7 +154,7 @@ AutoFishMan/
 |--------|------|
 | `DASHSCOPE_API_KEY` | 阿里云 DashScope API 密钥 |
 
-敏感配置（飞书密钥、用户 ID 等）放在 `config/agent.yml` 中，该文件已加入 `.gitignore`，请勿提交。
+
 
 ---
 
