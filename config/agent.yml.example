@@ -1,0 +1,5 @@
+feishu_app_id: "your_feishu_app_id"
+feishu_app_secret: "your_feishu_app_secret"
+feishu_human_agent_open_id: "your_open_id"
+my_user_id: "your_xianyu_user_id"
+external_data_path: data/external/records.csv

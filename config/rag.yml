@@ -1,0 +1,12 @@
+chat_model_name: qwen3-max
+embedding_model_name: text-embedding-v4
+# ── 多模态模型配置 ──────────────────────────
+vision_model_name: qwen-vl-max        # 图片理解模型（也可用 qwen-vl-plus 节省费用）
+
+# ASR 语音识别
+asr_model_name: sensevoice-v1      # 支持中英文混合，情感识别
+asr_sample_rate: 16000                  # 采样率（Hz）
+
+# TTS 语音合成
+tts_model_name: cosyvoice-v1
+tts_voice: longxiaochun              # 可选音色：longxiaochun/longtong/longfei 等

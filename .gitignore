@@ -1,0 +1,16 @@
+# 敏感配置
+config/agent.yml
+auth.json
+
+# 数据文件
+data/external/
+chroma_db/
+md5.text
+
+# 日志
+logs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
