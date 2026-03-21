@@ -1,0 +1,105 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Database
+data/*.db
+data/*.db-journal
+*.sqlite
+*.sqlite3
+
+# Playwright
+playwright/.auth/
+playwright/auth.json
+auth.json
+
+# Config files with sensitive data
+config/cookies.yml
+config/secrets.yml
+
+# Cache
+.cache/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+.cover
+*.cover
+.hypothesis/
+
+# Documentation builds
+docs/_build/
+
+# Local development
+local_settings.py
+db.sqlite3
+
+# ChromaDB
+chroma_db/
+.chroma/
+
+# Model files
+*.pkl
+*.pth
+*.pt
+*.h5
+*.onnx
+*.tflite
+
+# Temporary files
+tmp/
+temp/
+*.tmp

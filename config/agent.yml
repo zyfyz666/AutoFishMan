@@ -1,0 +1,7 @@
+external_data_path: data/external/records.csv
+
+feishu_app_id: "cli_a92f0bf4f9b89cc7"
+feishu_app_secret: "FqnDCosHOvpJQg5YTUEMLcRuFiSOsbtk"
+#feishu_human_agent_open_id: "ou_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  # 人工客服的 open_id
+feishu_human_agent_open_id: "ou_f2614774daae9ab7e678581752118ab1"
+my_user_id: "2208589581813"
