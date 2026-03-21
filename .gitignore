@@ -103,3 +103,13 @@ chroma_db/
 tmp/
 temp/
 *.tmp
+
+# Test scripts
+test_*.py
+*_test.py
+mock_*.py
+run_all_tests.py
+check_admin_interface.py
+demo_full_flow.py
+run_mock_with_admin.py
+TEST_FLOW.md
