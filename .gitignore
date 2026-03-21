@@ -63,8 +63,7 @@ playwright/auth.json
 auth.json
 
 # Config files with sensitive data
-config/cookies.yml
-config/secrets.yml
+config/
 
 # Cache
 .cache/
