@@ -10,6 +10,8 @@
 - 🖥️ **管理后台**：Streamlit 构建的客服管理界面
 - 💾 **数据持久化**：SQLite 数据库存储会话和消息
 - 🔄 **多进程支持**：管理后台和消息处理独立运行，通过数据库共享数据
+- 🖼️ **图片支持**：支持图片消息的理解和回复
+- 🎙️ **语音支持**：支持语音消息的识别和回复
 
 ## 系统架构
 
@@ -38,21 +40,26 @@
 ## 项目结构
 
 ```
-AutoFishMan-Clean/
+AutoFishMan/
 ├── agent/                  # Agent 相关代码
 │   ├── react_agent.py     # ReAct Agent 实现
-│   ├── tools/             # Agent 工具
-│   │   ├── agent_tools.py # 工具函数
-│   │   └── middleware.py  # 中间件（转人工处理）
-│   └── prompts/           # 提示词模板
-├── config/                # 配置文件
-│   ├── agent.yml          # Agent 配置
-│   ├── xianyu.yml         # 闲鱼配置
-│   └── feishu.yml         # 飞书配置
+│   ├── audio_agent.py     # 语音 Agent
+│   ├── vision_agent.py    # 视觉 Agent
+│   └── tools/             # Agent 工具
+│       ├── agent_tools.py # 工具函数
+│       ├── middleware.py  # 中间件（转人工处理）
+│       └── multimodal_tools.py
+├── config/                # 配置文件（需手动创建，见下方说明）
 ├── data/                  # 数据文件
-│   └── sessions.db        # SQLite 数据库
+│   ├── *.txt              # 知识库文档
+│   └── sessions.db        # SQLite 数据库（自动创建）
+├── model/                 # 模型相关
+│   ├── factory.py         # 模型工厂
+│   └── multimodal_factory.py
+├── prompts/               # 提示词模板
 ├── rag/                   # RAG 相关
-│   └── rag_service.py     # RAG 服务
+│   ├── rag_service.py     # RAG 服务
+│   └── vector_store.py    # 向量存储
 ├── utils/                 # 工具类
 │   ├── db_manager.py      # 数据库管理
 │   ├── session_manager.py # 会话管理
@@ -65,14 +72,13 @@ AutoFishMan-Clean/
 │   └── xianyu_live.py     # 消息调度处理
 ├── admin.py               # 管理后台（Streamlit）
 ├── main.py                # 主入口
-├── mock_xianyu_users.py   # 模拟用户（测试用）
-├── run_all_tests.py       # 自动化测试
-├── TEST_FLOW.md           # 测试流程文档
 ├── requirements.txt       # 依赖列表
 └── README.md              # 项目说明
 ```
 
-## 安装依赖
+## 快速开始
+
+### 1. 安装依赖
 
 ```bash
 pip install -r requirements.txt
@@ -81,37 +87,109 @@ pip install -r requirements.txt
 playwright install chromium
 ```
 
-## 配置说明
+### 2. 创建配置目录和文件
 
-### 1. Agent 配置 (config/agent.yml)
+```bash
+mkdir config
+```
+
+创建以下配置文件：
+
+#### config/agent.yml
 
 ```yaml
-# 你的闲鱼数字ID
+# 你的闲鱼数字ID（必填）
 my_user_id: '123456789'
 
 # RAG 配置
 rag:
   top_k: 5
   score_threshold: 0.7
-  
+
 # 外部数据路径
 external_data_path: config/external_data.csv
+
+# 其他配置
+enable_auto_reply: true
+enable_human_transfer: true
 ```
 
-### 2. 闲鱼配置 (config/xianyu.yml)
+#### config/xianyu.yml
 
 ```yaml
+# 闲鱼配置
 cookies:
-  # 你的闲鱼 cookies
-  
+  # 你的闲鱼 cookies（首次运行后会自动保存到 auth.json）
+
 max_workers: 4
+message_debounce_seconds: 5
 ```
 
-### 3. 飞书配置 (config/feishu.yml) - 可选
+#### config/feishu.yml（可选）
 
 ```yaml
+# 飞书机器人配置
 webhook_url: 'https://open.feishu.cn/open-apis/bot/v2/hook/xxx'
 ```
+
+#### config/chroma.yml
+
+```yaml
+# ChromaDB 配置
+collection_name: "knowledge_base"
+persist_directory: "./chroma_db"
+chunk_size: 500
+chunk_overlap: 50
+separators: ["\n\n", "\n", "。", "，"]
+k: 5
+data_path: "./data"
+allow_knowledge_file_type: ["txt", "pdf"]
+md5_hex_store: "./chroma_md5.txt"
+```
+
+#### config/rag.yml
+
+```yaml
+# RAG 服务配置
+model_name: "gpt-4o"
+temperature: 0.7
+max_tokens: 2000
+```
+
+#### config/prompts.yml
+
+```yaml
+# 提示词配置
+main_prompt: "prompts/main_prompt.txt"
+rag_summarize: "prompts/rag_summarize.txt"
+report_prompt: "prompts/report_prompt.txt"
+```
+
+### 3. 准备知识库数据
+
+将知识库文档放入 `data/` 目录，支持 `.txt` 和 `.pdf` 格式。
+
+### 4. 构建向量数据库
+
+```bash
+python rag/vector_store.py
+```
+
+这会读取 `data/` 目录下的文档，生成向量并存储到 ChromaDB。
+
+### 5. 启动系统
+
+```bash
+python main.py
+```
+
+首次运行需要：
+1. 扫码登录闲鱼
+2. 登录状态会保存到 `auth.json`
+
+系统会同时启动：
+- 闲鱼消息监听（自动回复 + 人工回复轮询）
+- 客服管理后台 http://localhost:8501
 
 ## 使用方式
 
@@ -121,14 +199,6 @@ webhook_url: 'https://open.feishu.cn/open-apis/bot/v2/hook/xxx'
 python main.py
 ```
 
-这会同时启动：
-- 闲鱼消息监听（自动回复 + 人工回复轮询）
-- 客服管理后台 http://localhost:8501
-
-首次运行需要：
-1. 扫码登录闲鱼
-2. 登录状态会保存到 auth.json
-
 ### 方式二：分别启动（测试/开发）
 
 **终端 1 - 启动管理后台：**
@@ -136,45 +206,32 @@ python main.py
 streamlit run admin.py --server.port 8501
 ```
 
-**终端 2 - 启动模拟测试（无需真实闲鱼）：**
+**终端 2 - 启动闲鱼监听：**
 ```bash
-python mock_xianyu_users.py
+python -c "from xianyu.xianyu_live import XianyuLive; import asyncio; xl = XianyuLive(); asyncio.run(xl.start())"
 ```
-
-**终端 3 - 启动真实闲鱼监听：**
-```bash
-# 修改 main.py 中的启动逻辑，只启动 xianyu
-```
-
-### 方式三：自动化测试
-
-```bash
-python run_all_tests.py
-```
-
-一键测试所有功能场景。
 
 ## 工作流程
 
 ### 1. 自动回复流程
 
-1. 用户发送消息
-2. xianyu_client 接收消息
-3. xianyu_live 调度处理
+1. 用户发送消息到闲鱼
+2. `xianyu_client` 接收消息（WebSocket）
+3. `xianyu_live` 调度处理（防抖 + 消息合并）
 4. Agent 检索 RAG 知识库
-5. 生成回复并发送给用户
+5. 生成回复并通过闲鱼 API 发送给用户
 
 ### 2. 转人工流程
 
 1. Agent 判断无法回答用户问题
 2. 调用 `transfer_to_human` 工具
-3. middleware 监控到转人工操作
-4. 标记会话为 `pending_human`
-5. 发送飞书通知（如果配置了）
+3. Middleware 监控到转人工操作
+4. 标记会话为 `pending_human` 状态
+5. 发送飞书通知（如果配置了 webhook）
 6. 管理后台显示待处理会话
-7. 人工客服回复消息
-8. 回复存入 `pending_outbox`
-9. xianyu_live 轮询器发送消息给用户
+7. 人工客服在管理后台回复消息
+8. 回复存入 `pending_outbox` 表
+9. `xianyu_live` 轮询器发送消息给闲鱼用户
 
 ## 管理后台操作
 
@@ -197,39 +254,21 @@ python run_all_tests.py
 2. 点击"标记已解决"按钮
 3. 会话状态变为 `resolved`
 
-## 测试
+## 功能清单
 
-### 手动测试
+- [x] 基础消息收发
+- [x] RAG 知识库问答
+- [x] 转人工机制
+- [x] 管理后台
+- [x] 多进程数据共享
+- [x] 飞书通知
+- [x] 支持图片消息
+- [x] 支持语音消息
 
-使用模拟脚本测试各项功能：
+## 开发计划
 
-```bash
-python mock_xianyu_users.py
-```
-
-选项说明：
-- 1. 发送单条消息 - 测试普通对话
-- 2. 发送触发转人工的消息 - 测试转人工流程
-- 3. 连续发送多条消息 - 测试消息防抖
-- 4. 并发发送多条消息 - 测试并发处理
-- 5. 同一用户连续发送 - 测试消息合并
-- 6. 查看已发送消息 - 查看发送历史
-- 7. 查看当前会话详情 - 查看会话状态
-- 8. 查看收到的回复消息 - 查看人工回复
-- 9. 退出
-
-### 自动化测试
-
-```bash
-python run_all_tests.py
-```
-
-测试场景：
-1. Agent 自动回复（普通问题）
-2. Agent 转人工（RAG 无法回答）
-3. 人工回复并发送
-4. 多用户并发
-5. 数据库完整性检查
+- [ ] 会话统计分析
+- [ ] 多客服分配
 
 ## 常见问题
 
@@ -253,6 +292,13 @@ A: 检查以下几点：
 1. 检查 RAG 检索结果
 2. 检查 Agent 的 prompt 是否包含转人工指令
 3. 检查 middleware 是否正常工作
+
+### Q: RAG 无法检索到内容？
+
+A: 检查以下几点：
+1. 是否已运行 `python rag/vector_store.py` 构建向量库
+2. `data/` 目录下是否有知识库文件
+3. 检查 `chroma_db/` 目录是否存在
 
 ### Q: 如何清空测试数据？
 
@@ -284,21 +330,12 @@ tail -f logs/agent.log | grep "发送"
 - **ChromaDB** - 向量数据库（RAG）
 - **OpenAI API** - LLM 模型
 
-## 功能清单
+## 注意事项
 
-- [x] 基础消息收发
-- [x] RAG 知识库问答
-- [x] 转人工机制
-- [x] 管理后台
-- [x] 多进程数据共享
-- [x] 飞书通知
-- [x] 支持图片消息
-- [x] 支持语音消息
-
-## 开发计划
-
-- [ ] 会话统计分析
-- [ ] 多客服分配
+1. **隐私保护**：`config/` 目录包含敏感信息，已添加到 `.gitignore`，请勿上传到 GitHub
+2. **登录状态**：首次运行需要扫码登录，登录状态会保存到 `auth.json`
+3. **知识库**：需要定期更新 `data/` 目录下的知识库文件，并重新构建向量库
+4. **多进程**：管理后台和消息处理是独立进程，通过 SQLite 共享数据
 
 ## 贡献指南
 
