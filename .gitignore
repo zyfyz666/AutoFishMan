@@ -63,7 +63,8 @@ playwright/auth.json
 auth.json
 
 # Config files with sensitive data
-config/
+config/*
+!config/*.yml.example
 
 # Cache
 .cache/
@@ -112,3 +113,8 @@ check_admin_interface.py
 demo_full_flow.py
 run_mock_with_admin.py
 TEST_FLOW.md
+
+# Keep regression tests in version control.
+!tests/test_*.py
+
+chroma_md5.txt

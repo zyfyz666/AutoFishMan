@@ -1,0 +1,9 @@
+collection_name: "knowledge_base"
+persist_directory: "./chroma_db"
+chunk_size: 500
+chunk_overlap: 50
+separators: ["\n\n", "\n", "。", "，"]
+k: 5
+data_path: "data"
+allow_knowledge_file_type: ["txt", "pdf"]
+md5_hex_store: "chroma_md5.txt"

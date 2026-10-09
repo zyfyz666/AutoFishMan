@@ -1,0 +1,8 @@
+# API Key 通过 DASHSCOPE_API_KEY 环境变量设置，不写入此文件。
+chat_model_name: "qwen-plus"
+embedding_model_name: "text-embedding-v3"
+vision_model_name: "qwen-vl-max"
+asr_model_name: "paraformer-realtime-v2"
+asr_sample_rate: 16000
+tts_model_name: "cosyvoice-v1"
+tts_voice: "longxiaochun"

@@ -7,7 +7,6 @@ import subprocess
 import sys
 import os
 import signal
-import threading
 import time
 from pathlib import Path
 
@@ -15,7 +14,6 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from utils.logger_handler import logger
-from utils.config_handler import agent_conf, xianyu_conf
 
 # 全局进程管理
 processes = []
@@ -47,19 +45,23 @@ def start_xianyu_listener():
     from xianyu.xianyu_live import XianyuLive
     
     async def run():
-        client = XianyuClient(
-            cookies=xianyu_conf.get("cookies", {}),
-            max_workers=xianyu_conf.get("max_workers", 4),
-        )
+        client = XianyuClient()
         live = XianyuLive(client)
+        client.on_message = live.on_message
         
         logger.info("[main] 启动闲鱼消息监听...")
         
         # 同时启动消息监听和待发送消息轮询
-        await asyncio.gather(
-            client.run(live.on_message),
+        poller = asyncio.create_task(
             live.start_outbox_poller(interval=2.0)
         )
+        try:
+            await client.run()
+        finally:
+            # 登录失败或浏览器关闭时，同步停止轮询并释放浏览器资源。
+            poller.cancel()
+            await asyncio.gather(poller, return_exceptions=True)
+            await client.close()
     
     return run
 

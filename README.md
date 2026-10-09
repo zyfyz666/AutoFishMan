@@ -49,7 +49,7 @@ AutoFishMan/
 │       ├── agent_tools.py # 工具函数
 │       ├── middleware.py  # 中间件（转人工处理）
 │       └── multimodal_tools.py
-├── config/                # 配置文件（需手动创建，见下方说明）
+├── config/                # 配置示例（复制 .yml.example 为 .yml 后填写）
 ├── data/                  # 数据文件
 │   ├── *.txt              # 知识库文档
 │   └── sessions.db        # SQLite 数据库（自动创建）
@@ -78,92 +78,77 @@ AutoFishMan/
 
 ## 快速开始
 
-### 1. 安装依赖
+### 1. 获取代码并安装依赖
+
+使用 **Python 3.10–3.12，推荐 3.12**。目前的音频依赖使用 `audioop`，暂不支持 Python 3.13+。
+以下命令均在仓库根目录执行。
 
 ```bash
-pip install -r requirements.txt
-
-# 安装 Playwright 浏览器
-playwright install chromium
+git clone https://github.com/zyfyz666/AutoFishMan.git
+cd AutoFishMan
+python -m venv .venv
 ```
 
-### 2. 创建配置目录和文件
+激活虚拟环境：Windows PowerShell 使用 `.\.venv\Scripts\Activate.ps1`；
+macOS / Linux 使用 `source .venv/bin/activate`。
 
 ```bash
-mkdir config
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip check
+
+# 安装 Playwright Chromium 浏览器
+python -m playwright install chromium
 ```
 
-创建以下配置文件：
+Linux 若提示缺少浏览器系统库，可执行 `python -m playwright install --with-deps chromium`。
+客户端会打开浏览器供扫码登录，需要图形桌面环境。
 
-#### config/agent.yml
+`sqlite3` 是 Python 标准库，无需另外安装。处理 MP3、M4A 等非 WAV/PCM 音频时，
+还需安装 [FFmpeg](https://ffmpeg.org/download.html) 并将其加入 PATH，可用 `ffmpeg -version` 检查。
 
-```yaml
-# 你的闲鱼数字ID（必填）
-my_user_id: '123456789'
+### 2. 复制配置示例并设置 API Key
 
-# RAG 配置
-rag:
-  top_k: 5
-  score_threshold: 0.7
+仓库提供四份不含密钥的 `config/*.yml.example`。复制后再编辑 `.yml` 文件：
 
-# 外部数据路径
-external_data_path: config/external_data.csv
+**Windows PowerShell：**
 
-# 其他配置
-enable_auto_reply: true
-enable_human_transfer: true
+```powershell
+Copy-Item config/agent.yml.example config/agent.yml
+Copy-Item config/rag.yml.example config/rag.yml
+Copy-Item config/chroma.yml.example config/chroma.yml
+Copy-Item config/prompts.yml.example config/prompts.yml
+$env:DASHSCOPE_API_KEY = "你的百炼 API Key"
 ```
 
-#### config/xianyu.yml
+**macOS / Linux：**
 
-```yaml
-# 闲鱼配置
-cookies:
-  # 你的闲鱼 cookies（首次运行后会自动保存到 auth.json）
-
-max_workers: 4
-message_debounce_seconds: 5
+```bash
+cp config/agent.yml.example config/agent.yml
+cp config/rag.yml.example config/rag.yml
+cp config/chroma.yml.example config/chroma.yml
+cp config/prompts.yml.example config/prompts.yml
+export DASHSCOPE_API_KEY="你的百炼 API Key"
 ```
 
-#### config/feishu.yml（可选）
+上述环境变量仅对当前终端及其启动的进程生效；分别启动服务时，每个终端都需要设置。
+模型实际使用阿里云百炼 DashScope，需为账号开通所选模型；程序不会自动读取 `.env`。
 
-```yaml
-# 飞书机器人配置
-webhook_url: 'https://open.feishu.cn/open-apis/bot/v2/hook/xxx'
-```
+| 文件 | 需要确认的内容 |
+| --- | --- |
+| `config/agent.yml` | 将 `my_user_id` 填为自己的闲鱼数字 ID，用于过滤自己发送的消息 |
+| `config/rag.yml` | `chat_model_name`、`embedding_model_name` 以及视觉、语音模型名称 |
+| `config/chroma.yml` | 知识库路径、向量库目录和分段参数；可先使用示例默认值 |
+| `config/prompts.yml` | 提示词文件路径；可直接使用示例默认值 |
 
-#### config/chroma.yml
+飞书通知通过**应用机器人**发送。使用通知功能前，在 `agent.yml` 中填写
+`feishu_app_id`、`feishu_app_secret` 和 `feishu_human_agent_open_id`，并为应用开通发送消息权限。
+当前实现不读取 `feishu.yml` 或 webhook，也不需要 `xianyu.yml`；闲鱼登录态由扫码后生成的 `auth.json` 保存。
 
-```yaml
-# ChromaDB 配置
-collection_name: "knowledge_base"
-persist_directory: "./chroma_db"
-chunk_size: 500
-chunk_overlap: 50
-separators: ["\n\n", "\n", "。", "，"]
-k: 5
-data_path: "./data"
-allow_knowledge_file_type: ["txt", "pdf"]
-md5_hex_store: "./chroma_md5.txt"
-```
+`external_data_path` 是报表工具使用的可选 CSV 路径，普通知识库问答无需该文件。
+使用报表工具前需自行提供 CSV，首行为表头，后续列依次为用户 ID、特征、效率、耗材、对比、月份。
 
-#### config/rag.yml
-
-```yaml
-# RAG 服务配置
-model_name: "gpt-4o"
-temperature: 0.7
-max_tokens: 2000
-```
-
-#### config/prompts.yml
-
-```yaml
-# 提示词配置
-main_prompt: "prompts/main_prompt.txt"
-rag_summarize: "prompts/rag_summarize.txt"
-report_prompt: "prompts/report_prompt.txt"
-```
+真实 `.yml` 配置、CSV 和登录状态均被 Git 忽略；只提交 `.yml.example` 示例。
 
 ### 3. 准备知识库数据
 
@@ -172,7 +157,7 @@ report_prompt: "prompts/report_prompt.txt"
 ### 4. 构建向量数据库
 
 ```bash
-python rag/vector_store.py
+python -m rag.vector_store
 ```
 
 这会读取 `data/` 目录下的文档，生成向量并存储到 ChromaDB。
@@ -208,7 +193,7 @@ streamlit run admin.py --server.port 8501
 
 **终端 2 - 启动闲鱼监听：**
 ```bash
-python -c "from xianyu.xianyu_live import XianyuLive; import asyncio; xl = XianyuLive(); asyncio.run(xl.start())"
+python -c "import asyncio; from main import start_xianyu_listener; asyncio.run(start_xianyu_listener()())"
 ```
 
 ## 工作流程
@@ -227,7 +212,7 @@ python -c "from xianyu.xianyu_live import XianyuLive; import asyncio; xl = Xiany
 2. 调用 `transfer_to_human` 工具
 3. Middleware 监控到转人工操作
 4. 标记会话为 `pending_human` 状态
-5. 发送飞书通知（如果配置了 webhook）
+5. 发送飞书通知（需配置应用机器人凭证和人工客服 open_id）
 6. 管理后台显示待处理会话
 7. 人工客服在管理后台回复消息
 8. 回复存入 `pending_outbox` 表
@@ -296,7 +281,7 @@ A: 检查以下几点：
 ### Q: RAG 无法检索到内容？
 
 A: 检查以下几点：
-1. 是否已运行 `python rag/vector_store.py` 构建向量库
+1. 是否已运行 `python -m rag.vector_store` 构建向量库
 2. `data/` 目录下是否有知识库文件
 3. 检查 `chroma_db/` 目录是否存在
 
@@ -321,25 +306,33 @@ tail -f logs/agent.log | grep "发送"
 
 ## 技术栈
 
-- **Python 3.10+**
+- **Python 3.10–3.12**（推荐 3.12）
 - **LangChain** - Agent 框架
 - **LangGraph** - 工作流编排
 - **Playwright** - 浏览器自动化（闲鱼 WebSocket）
 - **Streamlit** - 管理后台
 - **SQLite** - 数据存储
 - **ChromaDB** - 向量数据库（RAG）
-- **OpenAI API** - LLM 模型
+- **阿里云百炼 DashScope** - 通义千问文本、视觉、嵌入及语音模型
 
 ## 注意事项
 
-1. **隐私保护**：`config/` 目录包含敏感信息，已添加到 `.gitignore`，请勿上传到 GitHub
+1. **隐私保护**：`config/` 仅提交 `.yml.example` 示例；真实 `.yml`、CSV 和密钥请勿上传到 GitHub
 2. **登录状态**：首次运行需要扫码登录，登录状态会保存到 `auth.json`
 3. **知识库**：需要定期更新 `data/` 目录下的知识库文件，并重新构建向量库
 4. **多进程**：管理后台和消息处理是独立进程，通过 SQLite 共享数据
 
 ## 贡献指南
 
-欢迎提交 Issue 和 PR！
+欢迎提交 Issue 和 PR！安装依赖后可运行离线回归测试：
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+测试在临时目录使用示例配置和占位 API Key，不登录闲鱼、不调用模型、不发送消息。
+覆盖配置与依赖导入、PDF 读取、Agent 初始化以及启动资源释放。
+
 
 ## 许可证
 
