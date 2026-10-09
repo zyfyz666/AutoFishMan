@@ -1,53 +1,27 @@
-# 智能客服系统依赖
+# -*- coding: utf-8 -*-
+# Python 3.10–3.12（推荐 3.12）。SQLite 由 Python 标准库提供。
 
-# Web 框架和服务器
-streamlit>=1.28.0
-fastapi>=0.104.0
-uvicorn>=0.24.0
-websockets>=12.0
+# Agent / RAG：create_agent 和 middleware 使用 LangChain 1.x API。
+langchain>=1.0,<2
+langchain-core>=1.0,<2
+langchain-community>=0.4,<0.5
+langgraph>=1.0,<2
+langchain-chroma>=1.0,<2
+langchain-text-splitters>=1.0,<2
 
-# LangChain 生态
-langchain>=0.1.0
-langchain-core>=0.1.0
-langchain-community>=0.0.10
-langgraph>=0.0.50
+# 通义千问文本、视觉、嵌入、ASR 和 TTS
+dashscope>=1.24,<2
 
-# LLM 和嵌入模型
-openai>=1.0.0
-tiktoken>=0.5.0
+# 管理后台、闲鱼浏览器和飞书通知
+streamlit>=1.32,<2
+playwright>=1.40,<2
+lark-oapi>=1.5,<2
 
-# 向量数据库
-chromadb>=0.4.0
+# 配置、文档、图片、音频和 HTTP
+PyYAML>=6.0.1,<7
+pypdf>=5,<7
+Pillow>=10,<13
+pydub>=0.25.1,<0.26
+requests>=2.31,<3
 
-# 数据处理
-numpy>=1.24.0
-pandas>=2.0.0
-pyyaml>=6.0.1
-
-# 浏览器自动化
-playwright>=1.40.0
-
-# 数据库
-sqlite3-python
-
-# 异步支持
-aiohttp>=3.9.0
-aiosqlite>=0.19.0
-
-# 工具库
-requests>=2.31.0
-python-dotenv>=1.0.0
-tenacity>=8.2.0
-
-# 日志和监控
-loguru>=0.7.0
-
-# 开发工具（可选）
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-black>=23.0.0
-flake8>=6.0.0
-
-# 类型提示
-typing-extensions>=4.8.0
-pydantic>=2.5.0
+# MP3/M4A 等音频转换还需要系统安装 FFmpeg，见 README。

@@ -80,14 +80,14 @@ class XianyuClient:
                 return False
 
             await self.context.storage_state(path=AUTH_FILE)
-            logger.success(f"登录成功，状态已保存到 {AUTH_FILE}")
+            logger.info(f"登录成功，状态已保存到 {AUTH_FILE}")
         else:
             try:
                 await self.page.wait_for_selector(
                     '[class*="user-avatar"], [class*="avatar"], .user-info',
                     timeout=10000
                 )
-                logger.success("登录状态有效")
+                logger.info("登录状态有效")
             except PWTimeout:
                 logger.warning("登录状态已失效，删除 auth.json 后重新登录")
                 os.remove(AUTH_FILE)
@@ -316,7 +316,7 @@ class XianyuClient:
 
         logger.info("打开闲鱼聊天页面...")
         await self.page.goto(CHAT_URL, wait_until="networkidle", timeout=60000)
-        logger.success("就绪，等待消息...")
+        logger.info("就绪，等待消息...")
 
         while not self._stop:
             try:

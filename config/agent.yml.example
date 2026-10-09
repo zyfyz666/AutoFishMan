@@ -1,0 +1,11 @@
+# 复制为 config/agent.yml，再填写自己的闲鱼数字 ID。
+my_user_id: ""
+
+# 可选的外部报表 CSV；使用报表工具前需自行准备。
+external_data_path: "config/external_data.csv"
+
+# 飞书应用机器人通知所需配置（不是 webhook）。
+# 使用通知功能前填写 App ID、App Secret 和人工客服的 open_id。
+feishu_app_id: ""
+feishu_app_secret: ""
+feishu_human_agent_open_id: ""
